@@ -2,11 +2,11 @@ import { Box, Card, Grid, TextField, Autocomplete, Button } from '@mui/material'
 import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
 import * as React from 'react';
 import axios, {AxiosResponse} from 'axios';
+import { AddOrUpdateProductModal } from './components/AddOrUpdateProductModal';
 
 const options = ["dono", "casino", "indro"];
-const transactions = ['budi', 'badu', 'bidu', 'bidi'];
 
-type Product = {
+interface Product {
     name: string;
     price: number;
     amount: number;
@@ -19,6 +19,7 @@ export default function ProductPage() {
     const [rows, setRows] = React.useState<GridRowsProp>([]);
     const [pageNo, setPageNo] = React.useState<number>(0);
     const [rowCount, setRowcount] = React.useState<number>(0);
+    const [open, setOpen] = React.useState<boolean>(false);
 
     React.useEffect(() => {
         axios.get<Product[]>(`http://localhost:8082/product?pageSize=${pageSize}&pageNo=${pageNo}`)
@@ -59,7 +60,8 @@ export default function ProductPage() {
                     />
                 </Grid>
                 <Grid item xs={4}>
-                    <Button size="small" variant="contained">Add New Product</Button>
+                    <AddOrUpdateProductModal open={open} setOpen={setOpen} isUpdate/>
+                    <Button size="small" variant="contained" onClick={() => setOpen(true)}>Add New Product</Button>
                 </Grid>
             </Grid>
             <Box height='70vh'>
