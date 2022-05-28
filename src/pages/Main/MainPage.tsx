@@ -2,7 +2,7 @@ import { Grid, Box } from "@mui/material";
 import { useState } from 'react';
 import { CustomerSection } from "./components/CustomerSection";
 import { ProductSection } from "./components/ProductSection";
-import { TransactionHistory } from "./components/TransactionHistory";
+import { TransactionHistorySection } from "./components/TransactionHistorySection";
 
 const options = ["dono", "casino", "indro"];
 
@@ -19,7 +19,7 @@ export const MainPage = (): JSX.Element => {
 
           <CustomerSection value={value} setValue={setValue} inputValue={inputValue} setInputValue={setInputValue} options={options} />
           <ProductSection options={options} />
-          <TransactionHistory />
+          <TransactionHistorySection />
 
       </Grid>
     </Box>
