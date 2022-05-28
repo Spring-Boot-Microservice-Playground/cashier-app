@@ -6,12 +6,6 @@ import { AddOrUpdateProductModal } from './components/AddOrUpdateProductModal';
 
 const options = ["dono", "casino", "indro"];
 
-interface Product {
-    name: string;
-    price: number;
-    amount: number;
-}
-
 export default function ProductPage() {
     const [value, setValue] = React.useState<string | null>()
     const [inputValue, setInputValue] = React.useState<string | undefined>('')
@@ -22,15 +16,14 @@ export default function ProductPage() {
     const [open, setOpen] = React.useState<boolean>(false);
 
     React.useEffect(() => {
-        axios.get<Product[]>(`${process.env.REACT_APP_API_GATEWAY}product?pageSize=${pageSize}&pageNo=${pageNo}`)
+        axios.get(`${process.env.REACT_APP_API_URL}product?pageSize=${pageSize}&pageNo=${pageNo}`)
             .then((res: AxiosResponse) => {
                 setRowcount(res.data?.totalElements)
                 setRows(res.data?.content)
             })
             .catch((error) => {
-                console.clear()
-                console.log("error " + error.toJSON())
-                console.log("error " + error.message)
+                console.log("error :" + error.toJSON())
+                console.log("error :" + error.message)
             })
     }, [pageNo, pageSize]);
 
