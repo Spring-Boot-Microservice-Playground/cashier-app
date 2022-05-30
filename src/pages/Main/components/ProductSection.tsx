@@ -1,5 +1,5 @@
 import { RemoveCircleOutline } from "@mui/icons-material";
-import { Grid, Card, Autocomplete, TextField, Table, TableContainer, Paper, TableBody, TableRow, TableCell, IconButton } from "@mui/material";
+import { Grid, Card, Autocomplete, TextField, Table, TableContainer, Paper, TableBody, TableRow, TableCell, IconButton, Typography } from "@mui/material";
 import { useState } from "react";
 import { Product } from "../../../TypeDeclaration";
 
@@ -64,9 +64,39 @@ export const ProductSection = ({products}: {products: Product[]}): JSX.Element =
                                 <TableCell sx={{ fontWeight: 'bold' }} align="left">Price</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }} align="right"></TableCell>
                             </TableRow>
-                            {selectedProductList?.map((p, index) => (
-                                <SelectedProductItem key={index} onChangeAmount={(amount: number) => handleOnChangeAmountSelectedItem(index, amount)} maxAmount={products?.[index].amount} productItem={p} onItemRemoved={() => handleRemoveItem(index)}/>
+                            {selectedProductList?.map((productItem, index) => (
+                                <SelectedProductItem 
+                                    key={index} 
+                                    onChangeAmount={(amount: number) => handleOnChangeAmountSelectedItem(index, amount)} 
+                                    maxAmount={(() => {
+                                        let getAmount = products?.find(p => p.name === productItem.name)?.amount
+                                        return getAmount ? getAmount : 0
+                                    })()}
+                                    productItem={productItem} onItemRemoved={() => handleRemoveItem(index)}
+                                />
                             ))}
+                            <TableRow>
+                                    <TableCell colSpan={2} align="right">
+                                        <Typography fontWeight="bold">
+                                            Total Price : Rp.
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell colSpan={2} align="left">
+                                        <Typography fontWeight="bold">
+                                            {selectedProductList?.map(p => p.amount * p.price)?.reduce((prevValue, currValue) => prevValue + currValue, 0)}
+                                        </Typography>
+                                    </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                    <TableCell colSpan={2} align="right">
+                                        <Typography fontWeight="bold">
+                                            Cash : Rp.
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell colSpan={2} align="left">
+                                        <input type="number" style={{ width: '110px' }}/>
+                                    </TableCell>
+                            </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -114,16 +144,13 @@ const SelectedProductItem = ({
                     min={1} 
                     max={maxAmount} 
                     value={selectedProductAmount} 
-                    onBlur={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        handleProductAmountInput(e)
-                    }}
+                    onBlur={(e: React.ChangeEvent<HTMLInputElement>) => handleProductAmountInput(e)}
                     onChange={(e) => setSelectedProductAmount(e.target.value)}
                     onKeyDownCapture={(e: React.KeyboardEvent<HTMLInputElement>) => {
                         if(e.key === 'Enter' || e.key === "NumpadEnter"){
                             e.preventDefault()
                             e.currentTarget.blur()
                         }
-
                     }}
                     style={{width: '40px'}}
                 />
