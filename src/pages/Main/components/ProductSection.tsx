@@ -9,7 +9,6 @@ export const ProductSection = ({products}: {products: Product[]}): JSX.Element =
     const [selectedProductList, setSelectedProductList] = useState<Product[]>([])
     const [searchValue, setSearchValue] = useState<Product | null>(null);
     const [searchInputValue, setSearchInputValue] = useState<string>('');
-    const [selectedProductAmount, setSelectedProductAmount] = useState<string>("");
 
     const handleRemoveItem = (pName: string) => {
         const newList = selectedProductList.filter((item) => item?.name !== pName);
@@ -28,6 +27,8 @@ export const ProductSection = ({products}: {products: Product[]}): JSX.Element =
         
     }
 
+    console.log("isi : " + selectedProductList)
+
     return (
         <Grid item xs={4} height='90vh'>
             <Card sx={{p: 2, height: '100%', backgroundColor: "#f5f5f5"}}>
@@ -45,6 +46,8 @@ export const ProductSection = ({products}: {products: Product[]}): JSX.Element =
                     inputValue={searchInputValue}
                     onInputChange={(event, newInputValue) => setSearchInputValue(newInputValue)}
                     options={products}
+                    // filterSelectedOptions={true} // useless since searchValue is cleared everytime
+                    filterOptions={(options: Product[]) => options.filter(p => p.amount > 0)}
                     getOptionLabel={(option: Product) => option.name }
                     renderInput={(params) => <TextField {...params} label="Add Product" />}
                 />
@@ -59,23 +62,55 @@ export const ProductSection = ({products}: {products: Product[]}): JSX.Element =
                                 <TableCell sx={{ fontWeight: 'bold' }} align="right"></TableCell>
                             </TableRow>
                             {selectedProductList?.map((p) => (
-                                <TableRow key={p?.name}>
-                                    <TableCell sx={{width: '50%'}}>{p?.name}</TableCell>
-                                    <TableCell align="center">
-                                        <input type="number" min={1} value={selectedProductAmount} onInput={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedProductAmount(e.target.value)} style={{width: '40px'}}/>
-                                    </TableCell>
-                                    <TableCell>{p?.price}</TableCell>
-                                    <TableCell>
-                                        <IconButton onClick={() => handleRemoveItem(p?.name)}>
-                                            <RemoveCircleOutline />
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
+                                <SelectedProductItem productItem={p} handleRemoveItem={handleRemoveItem}/>
                             ))}
                         </TableBody>
                     </Table>
                 </TableContainer>
             </Card>
         </Grid>
+    )
+}
+
+const SelectedProductItem = ({productItem, handleRemoveItem}: {productItem: Product, handleRemoveItem: (pName: string) => void}) => {
+    const [selectedProductAmount, setSelectedProductAmount] = useState<string>("1");
+
+    const handleProductAmountInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const inputAmount = parseInt(e.target.value)
+        if(!isNaN(inputAmount))
+            inputAmount <= productItem?.amount ? setSelectedProductAmount(inputAmount.toString()) : setSelectedProductAmount(productItem.amount.toString())
+        else
+            setSelectedProductAmount("1")
+    }
+    return (
+        <TableRow key={productItem?.name}>
+            <TableCell sx={{width: '50%'}}>{productItem?.name}</TableCell>
+            <TableCell align="center">
+                <input 
+                    type="number" 
+                    min={1} 
+                    max={productItem.amount} 
+                    value={selectedProductAmount} 
+                    onBlur={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        handleProductAmountInput(e)
+                    }}
+                    onChange={(e) => setSelectedProductAmount(e.target.value)}
+                    onKeyDownCapture={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                        if(e.key === 'Enter' || e.key === "NumpadEnter"){
+                            e.preventDefault()
+                            e.currentTarget.blur()
+                        }
+
+                    }}
+                    style={{width: '40px'}}
+                />
+            </TableCell>
+            <TableCell>{productItem?.price}</TableCell>
+            <TableCell>
+                <IconButton onClick={() => handleRemoveItem(productItem?.name)}>
+                    <RemoveCircleOutline />
+                </IconButton>
+            </TableCell>
+        </TableRow>
     )
 }
