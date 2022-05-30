@@ -1,33 +1,36 @@
 import { RemoveCircleOutline } from "@mui/icons-material";
 import { Grid, Card, Autocomplete, TextField, Table, TableContainer, Paper, TableBody, TableRow, TableCell, IconButton } from "@mui/material";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Product } from "../../../TypeDeclaration";
-
-// const pilihan: Product[] = [{name: 'budi', price: 2000, amount: 20}, {name: 'beng beng', amount: 55, price: 1000}]
 
 export const ProductSection = ({products}: {products: Product[]}): JSX.Element => {
     const [selectedProductList, setSelectedProductList] = useState<Product[]>([])
     const [searchValue, setSearchValue] = useState<Product | null>(null);
     const [searchInputValue, setSearchInputValue] = useState<string>('');
 
-    const handleRemoveItem = (pName: string) => {
-        const newList = selectedProductList.filter((item) => item?.name !== pName);
+    const handleRemoveItem = (index: number) => {
+        const newList = selectedProductList.filter((item: Product, idx: number) => idx !== index);
         setSelectedProductList(newList);
     }
 
     const handleItemSelection = (selectedItem: Product | null) => {
         if (selectedItem){
-            const selectedProduct = products?.find(p => p?.name === selectedItem?.name)
+            const isSelectedProductInProductsList: boolean = products?.find(p => p?.name === selectedItem?.name) ? true : false
             const isAlreadySelected = selectedProductList?.find(p => p?.name === selectedItem?.name) ? true : false
-            if (!isAlreadySelected && selectedProduct){
-                const updatedSelectedProductList = [...selectedProductList, selectedProduct]
+            if (!isAlreadySelected && isSelectedProductInProductsList){
+                const selectedItemCopy = Object.assign({}, selectedItem)
+                selectedItemCopy.amount = 1
+                const updatedSelectedProductList = [...selectedProductList, selectedItemCopy]
                 setSelectedProductList(updatedSelectedProductList as Product[])
             }
         }
-        
     }
 
-    console.log("isi : " + selectedProductList)
+    const handleOnChangeAmountSelectedItem = (index: number, newAmount: number) => {
+        const selectedProductListCopy = selectedProductList.slice()
+        selectedProductListCopy[index].amount = newAmount
+        setSelectedProductList(selectedProductListCopy) 
+    }
 
     return (
         <Grid item xs={4} height='90vh'>
@@ -61,8 +64,8 @@ export const ProductSection = ({products}: {products: Product[]}): JSX.Element =
                                 <TableCell sx={{ fontWeight: 'bold' }} align="left">Price</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }} align="right"></TableCell>
                             </TableRow>
-                            {selectedProductList?.map((p) => (
-                                <SelectedProductItem productItem={p} handleRemoveItem={handleRemoveItem}/>
+                            {selectedProductList?.map((p, index) => (
+                                <SelectedProductItem key={index} onChangeAmount={(amount: number) => handleOnChangeAmountSelectedItem(index, amount)} maxAmount={products?.[index].amount} productItem={p} onItemRemoved={() => handleRemoveItem(index)}/>
                             ))}
                         </TableBody>
                     </Table>
@@ -72,24 +75,44 @@ export const ProductSection = ({products}: {products: Product[]}): JSX.Element =
     )
 }
 
-const SelectedProductItem = ({productItem, handleRemoveItem}: {productItem: Product, handleRemoveItem: (pName: string) => void}) => {
+const SelectedProductItem = ({
+    productItem, 
+    onItemRemoved, 
+    maxAmount, 
+    onChangeAmount
+    }: {
+        onChangeAmount: (amount: number) => void,
+        maxAmount: number, 
+        productItem: Product, 
+        onItemRemoved: () => void
+}) => {
     const [selectedProductAmount, setSelectedProductAmount] = useState<string>("1");
 
     const handleProductAmountInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const inputAmount = parseInt(e.target.value)
-        if(!isNaN(inputAmount))
-            inputAmount <= productItem?.amount ? setSelectedProductAmount(inputAmount.toString()) : setSelectedProductAmount(productItem.amount.toString())
-        else
+        if(!isNaN(inputAmount)){
+            if(inputAmount <= maxAmount){
+                setSelectedProductAmount(inputAmount.toString())
+                onChangeAmount(inputAmount)
+            } else {
+                setSelectedProductAmount(maxAmount.toString())
+                onChangeAmount(inputAmount)
+            }
+        }
+        else {
             setSelectedProductAmount("1")
+            onChangeAmount(1)
+        }
     }
+
     return (
-        <TableRow key={productItem?.name}>
+        <TableRow>
             <TableCell sx={{width: '50%'}}>{productItem?.name}</TableCell>
             <TableCell align="center">
                 <input 
                     type="number" 
                     min={1} 
-                    max={productItem.amount} 
+                    max={maxAmount} 
                     value={selectedProductAmount} 
                     onBlur={(e: React.ChangeEvent<HTMLInputElement>) => {
                         handleProductAmountInput(e)
@@ -105,9 +128,9 @@ const SelectedProductItem = ({productItem, handleRemoveItem}: {productItem: Prod
                     style={{width: '40px'}}
                 />
             </TableCell>
-            <TableCell>{productItem?.price}</TableCell>
+            <TableCell>{productItem?.price * productItem?.amount}</TableCell>
             <TableCell>
-                <IconButton onClick={() => handleRemoveItem(productItem?.name)}>
+                <IconButton onClick={onItemRemoved}>
                     <RemoveCircleOutline />
                 </IconButton>
             </TableCell>
