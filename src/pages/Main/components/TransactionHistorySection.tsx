@@ -3,21 +3,7 @@ import IconButton from '@mui/material/IconButton';
 import axios, {AxiosResponse} from 'axios';
 import { useState, useEffect } from "react";
 import { TransactionListItem } from "./TransactionListItem";
-
-interface Product {
-    name: string;
-    price: number;
-    amount: number;
-}
-
-export interface Transaction {
-    id: string,
-    customer_name: string;
-    date: string;
-    cash: number;
-    change: number;
-    products: Product[];
-}
+import { Transaction } from "../../../TypeDeclaration";
 
 // const transactions = [{id: 1, customer_name: 'aku adalah anak gembala selalu riang serta gembira', date: new Date().toISOString(), cash: 2000000000, change: 3000000, products: [{name: 'chitato', price: 80000000, amount: 8}, {name: 'beng beng', price: 8000, amount: 8}, {name: 'halo halo bandung', price: 8000, amount: 8}, {name: 'ibu mota periangan sudah lama beta tidak berjumpa dengan kau', price: 8000, amount: 8}]}]
 
@@ -25,7 +11,7 @@ export const TransactionHistorySection = (): JSX.Element => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_API_URL}transaction?start=${new Date('2022-04-10').toISOString().split('T')[0]}`)
+        axios.get<Transaction[]>(`${process.env.REACT_APP_API_URL}transaction?start=${new Date('2022-04-10').toISOString().split('T')[0]}`)
             .then((res: AxiosResponse) => {
                 setTransactions(res?.data)
             })

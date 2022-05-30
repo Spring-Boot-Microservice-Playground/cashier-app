@@ -1,13 +1,14 @@
 import { Grid, Card, Autocomplete, TextField, Button } from "@mui/material";
 import React from "react";
 import { CreateCustomerModal } from "./CreateCustomerModal";
+import { Product } from "../../../TypeDeclaration";
 
 interface propsType {
     value: string | undefined | null, 
     setValue: (v: string | undefined | null) => void, 
     inputValue: string | undefined, 
     setInputValue: (v: string | undefined) => void,
-    options: string[]
+    options: Product[]
 }
 
 export const CustomerSection = ({value, setValue, inputValue, setInputValue, options}: propsType): JSX.Element => {
@@ -29,7 +30,7 @@ export const CustomerSection = ({value, setValue, inputValue, setInputValue, opt
                             }}
                             size='small'
                             freeSolo
-                            options={options.map((option) => option)}
+                            options={options.map((option) => option.name)}
                             renderInput={(params) => <TextField {...params} label="Customer" />}
                         />
                     </Grid>

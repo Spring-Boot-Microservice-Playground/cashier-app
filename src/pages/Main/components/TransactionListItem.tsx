@@ -1,6 +1,6 @@
-import { Box, Typography, ListItemText, Collapse, ListItemButton, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Divider } from "@mui/material";
+import { Box, Typography, ListItemText, Collapse, ListItemButton, TableContainer, Paper, Table, TableRow, TableCell, TableBody, Divider } from "@mui/material";
 import { useState } from "react";
-import { Transaction } from "./TransactionHistorySection";
+import { Transaction } from "../../../TypeDeclaration";
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 
