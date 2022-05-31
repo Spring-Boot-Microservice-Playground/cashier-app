@@ -1,22 +1,25 @@
 import { RemoveCircleOutline } from "@mui/icons-material";
 import { Grid, Card, Autocomplete, TextField, Table, TableContainer, Paper, TableBody, TableRow, TableCell, IconButton, Typography } from "@mui/material";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { ProductsContext } from "../../../App";
 import { Product } from "../../../TypeDeclaration";
 
-export const ProductSection = ({products}: {products: Product[]}): JSX.Element => {
-    const [selectedProductList, setSelectedProductList] = useState<Product[]>([])
+export const ProductSection = (): JSX.Element => {
+    const products = useContext(ProductsContext);
+    // const products: Product[] = [];
+    const [selectedProductList, setSelectedProductList] = useState<Product[]>([]);
     const [searchValue, setSearchValue] = useState<Product | null>(null);
     const [searchInputValue, setSearchInputValue] = useState<string>('');
 
     const handleRemoveItem = (index: number) => {
-        const newList = selectedProductList.filter((item: Product, idx: number) => idx !== index);
+        const newList = selectedProductList?.filter((item: Product, idx: number) => idx !== index);
         setSelectedProductList(newList);
     }
 
     const handleItemSelection = (selectedItem: Product | null) => {
         if (selectedItem){
-            const isSelectedProductInProductsList: boolean = products?.find(p => p?.name === selectedItem?.name) ? true : false
-            const isAlreadySelected = selectedProductList?.find(p => p?.name === selectedItem?.name) ? true : false
+            const isSelectedProductInProductsList: boolean = products?.find(p => p?.id === selectedItem?.id) ? true : false
+            const isAlreadySelected = selectedProductList?.find(p => p?.id === selectedItem?.id) ? true : false
             if (!isAlreadySelected && isSelectedProductInProductsList){
                 const selectedItemCopy = Object.assign({}, selectedItem)
                 selectedItemCopy.amount = 1
@@ -31,7 +34,7 @@ export const ProductSection = ({products}: {products: Product[]}): JSX.Element =
         selectedProductListCopy[index].amount = newAmount
         setSelectedProductList(selectedProductListCopy) 
     }
-
+console.log("terpenggal")
     return (
         <Grid item xs={4} height='90vh'>
             <Card sx={{p: 2, height: '100%', backgroundColor: "#f5f5f5"}}>
@@ -50,7 +53,7 @@ export const ProductSection = ({products}: {products: Product[]}): JSX.Element =
                     onInputChange={(event, newInputValue) => setSearchInputValue(newInputValue)}
                     options={products}
                     // filterSelectedOptions={true} // useless since searchValue is cleared everytime
-                    filterOptions={(options: Product[]) => options.filter(p => p.amount > 0)}
+                    filterOptions={(options: Product[]) => options?.filter(p => p.amount > 0)}
                     getOptionLabel={(option: Product) => option.name }
                     renderInput={(params) => <TextField {...params} label="Add Product" />}
                 />
@@ -69,7 +72,7 @@ export const ProductSection = ({products}: {products: Product[]}): JSX.Element =
                                     key={index} 
                                     onChangeAmount={(amount: number) => handleOnChangeAmountSelectedItem(index, amount)} 
                                     maxAmount={(() => {
-                                        let getAmount = products?.find(p => p.name === productItem.name)?.amount
+                                        let getAmount = products?.find(p => p.id === productItem.id)?.amount
                                         return getAmount ? getAmount : 0
                                     })()}
                                     productItem={productItem} onItemRemoved={() => handleRemoveItem(index)}
@@ -95,6 +98,18 @@ export const ProductSection = ({products}: {products: Product[]}): JSX.Element =
                                     </TableCell>
                                     <TableCell colSpan={2} align="left">
                                         <input type="number" style={{ width: '110px' }}/>
+                                    </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                    <TableCell colSpan={2} align="right">
+                                        <Typography fontWeight="bold">
+                                            Change : Rp.
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell colSpan={2} align="left">
+                                        <Typography fontWeight="bold">
+                                            {selectedProductList?.map(p => p.amount * p.price)?.reduce((prevValue, currValue) => prevValue + currValue, 0)}
+                                        </Typography>
                                     </TableCell>
                             </TableRow>
                         </TableBody>
