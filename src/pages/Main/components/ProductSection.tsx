@@ -121,12 +121,15 @@ const SelectedProductItem = ({
     const handleProductAmountInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const inputAmount = parseInt(e.target.value)
         if(!isNaN(inputAmount)){
-            if(inputAmount <= maxAmount){
+            if(inputAmount <= maxAmount && inputAmount > 0){
                 setSelectedProductAmount(inputAmount.toString())
                 onChangeAmount(inputAmount)
-            } else {
+            } else if(inputAmount > maxAmount) {
                 setSelectedProductAmount(maxAmount.toString())
-                onChangeAmount(inputAmount)
+                onChangeAmount(maxAmount)
+            } else {
+                setSelectedProductAmount("1")
+                onChangeAmount(1)
             }
         }
         else {
