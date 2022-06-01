@@ -1,40 +1,88 @@
 import { RemoveCircleOutline } from "@mui/icons-material";
 import { Grid, Card, Autocomplete, TextField, Table, TableContainer, Paper, TableBody, TableRow, TableCell, IconButton, Typography } from "@mui/material";
-import { useContext, useState } from "react";
+import { useContext, useReducer, useState } from "react";
 import { ProductsContext } from "../../../App";
+import { numberCommaSeparator } from "../../../helper";
 import { Product } from "../../../TypeDeclaration";
 
+interface Receipt {
+    purchasedProducts: Product[]
+    totalPrice: number
+    cash: number
+    change: number
+}
+
+enum ActionType {
+    REMOVE_ITEM = 'REMOVE_ITEM',
+    ADD_ITEM = 'ADD_ITEM',
+    CHANGE_AMOUNT = 'CHANGE_AMOUNT'
+}
+
+const initialReceipt: Receipt = {purchasedProducts: [], totalPrice: 0, cash: 0, change: 0}
+
+const handleRemoveItem = (purchasedProducts: Product[], item: Product) => {
+    const newList = purchasedProducts?.filter((p: Product) => p.id !== item.id);
+    purchasedProducts = newList;
+    return purchasedProducts
+}
+
+const handleItemSelection = (purchasedProducts: Product[], item: Product) => {
+    const isAlreadySelected = purchasedProducts?.find(p => p?.id === item.id) ? true : false
+    if (!isAlreadySelected){
+        const selectedItemCopy = Object.assign({}, item)
+        selectedItemCopy.amount = 1
+        purchasedProducts.push(selectedItemCopy)
+        // setpurchasedProducts(updatedpurchasedProducts as Product[])
+    }
+    purchasedProducts.forEach(p => console.log("handleItemSelection: " + p.name + ","))
+    return purchasedProducts
+}
+
+const handleOnChangeAmountSelectedItem = (purchasedProducts: Product[], item: Product, newAmount: number) => {
+    purchasedProducts.every(p => {
+        if(p.id === item.id){
+            p.amount = newAmount
+            return false
+        }
+        return true
+    })
+    return purchasedProducts
+    // setpurchasedProducts(purchasedProductsCopy) 
+}
+
+const reducer = (state: Receipt, action: {type: ActionType, item: Product, amount?: number}): Receipt => {
+    const {type, item, amount} = {...action}
+    let updatedpurchasedProducts: Product[] = []
+    switch (type) {
+        case ActionType.ADD_ITEM:
+            updatedpurchasedProducts = handleItemSelection(state.purchasedProducts, item)
+            return {
+                ...state,
+                purchasedProducts: updatedpurchasedProducts
+            }
+        case ActionType.CHANGE_AMOUNT:
+            updatedpurchasedProducts = handleOnChangeAmountSelectedItem(state.purchasedProducts, item, amount!)
+            return {
+                ...state,
+                purchasedProducts: updatedpurchasedProducts
+            }
+        case ActionType.REMOVE_ITEM:
+            updatedpurchasedProducts = handleRemoveItem(state.purchasedProducts, item)
+            return {
+                ...state,
+                purchasedProducts: updatedpurchasedProducts
+            }
+        default:
+            throw new Error("product section reducer error");
+    }
+}
+
 export const ProductSection = (): JSX.Element => {
-    const products = useContext(ProductsContext);
-    // const products: Product[] = [];
-    const [selectedProductList, setSelectedProductList] = useState<Product[]>([]);
+    const PRODUCTS = useContext(ProductsContext);
+    const [receipt, receiptDispatch] = useReducer(reducer, initialReceipt);
     const [searchValue, setSearchValue] = useState<Product | null>(null);
     const [searchInputValue, setSearchInputValue] = useState<string>('');
 
-    const handleRemoveItem = (index: number) => {
-        const newList = selectedProductList?.filter((item: Product, idx: number) => idx !== index);
-        setSelectedProductList(newList);
-    }
-
-    const handleItemSelection = (selectedItem: Product | null) => {
-        if (selectedItem){
-            const isSelectedProductInProductsList: boolean = products?.find(p => p?.id === selectedItem?.id) ? true : false
-            const isAlreadySelected = selectedProductList?.find(p => p?.id === selectedItem?.id) ? true : false
-            if (!isAlreadySelected && isSelectedProductInProductsList){
-                const selectedItemCopy = Object.assign({}, selectedItem)
-                selectedItemCopy.amount = 1
-                const updatedSelectedProductList = [...selectedProductList, selectedItemCopy]
-                setSelectedProductList(updatedSelectedProductList as Product[])
-            }
-        }
-    }
-
-    const handleOnChangeAmountSelectedItem = (index: number, newAmount: number) => {
-        const selectedProductListCopy = selectedProductList.slice()
-        selectedProductListCopy[index].amount = newAmount
-        setSelectedProductList(selectedProductListCopy) 
-    }
-console.log("terpenggal")
     return (
         <Grid item xs={5} height='90vh'>
             <Card sx={{p: 2, height: '100%', backgroundColor: "#f5f5f5"}}>
@@ -42,9 +90,10 @@ console.log("terpenggal")
                     sx={{ width: '70%' }}
                     size='small'
                     value={searchValue}
-                    onChange={(event: any, newValue: Product | null) => {
-                        setSearchValue(newValue)
-                        handleItemSelection(newValue)
+                    onChange={(event: any, newItem: Product | null) => {
+                        setSearchValue(newItem)
+                        if(typeof newItem?.id === 'string') receiptDispatch({type: ActionType.ADD_ITEM, item: newItem})
+                        // handleItemSelection(newItem)
                     }}
                     onClose={() => {
                         setSearchInputValue("")
@@ -52,7 +101,7 @@ console.log("terpenggal")
                     }}
                     inputValue={searchInputValue}
                     onInputChange={(event, newInputValue) => setSearchInputValue(newInputValue)}
-                    options={products}
+                    options={PRODUCTS}
                     // filterSelectedOptions={true} // useless since searchValue is cleared everytime
                     getOptionLabel={(option: Product) => `${option.name} (available: ${option.amount}) Rp. ${option.price}` }
                     renderInput={(params) => <TextField {...params} label="Add Product" />}
@@ -67,15 +116,15 @@ console.log("terpenggal")
                                 <TableCell sx={{ fontWeight: 'bold' }} align="left">Price</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }} align="right"></TableCell>
                             </TableRow>
-                            {selectedProductList?.map((productItem, index) => (
+                            {receipt.purchasedProducts?.map((productItem, index) => (
                                 <SelectedProductItem 
                                     key={index} 
-                                    onChangeAmount={(amount: number) => handleOnChangeAmountSelectedItem(index, amount)} 
+                                    onChangeAmount={(amount: number) => receiptDispatch({type: ActionType.CHANGE_AMOUNT, item: productItem, amount: amount})} 
                                     maxAmount={(() => {
-                                        let getAmount = products?.find(p => p.id === productItem.id)?.amount
+                                        let getAmount = PRODUCTS?.find(p => p.id === productItem.id)?.amount
                                         return getAmount ? getAmount : 0
                                     })()}
-                                    productItem={productItem} onItemRemoved={() => handleRemoveItem(index)}
+                                    productItem={productItem} onItemRemoved={() => receiptDispatch({type: ActionType.REMOVE_ITEM, item: productItem})}
                                 />
                             ))}
                             <TableRow>
@@ -86,7 +135,9 @@ console.log("terpenggal")
                                     </TableCell>
                                     <TableCell colSpan={2} align="left">
                                         <Typography fontWeight="bold">
-                                            {selectedProductList?.map(p => p.amount * p.price)?.reduce((prevValue, currValue) => prevValue + currValue, 0)}
+                                        {
+                                            numberCommaSeparator(receipt.purchasedProducts?.map(p => p.amount * p.price)?.reduce((prevValue, currValue) => prevValue + currValue, 0))
+                                        }
                                         </Typography>
                                     </TableCell>
                             </TableRow>
@@ -97,7 +148,7 @@ console.log("terpenggal")
                                         </Typography>
                                     </TableCell>
                                     <TableCell colSpan={2} align="left">
-                                        <input type="number" style={{ width: '110px' }}/>
+                                        <input min={1} max={10000000} type="number" style={{ width: '110px' }}/>
                                     </TableCell>
                             </TableRow>
                             <TableRow>
@@ -108,7 +159,7 @@ console.log("terpenggal")
                                     </TableCell>
                                     <TableCell colSpan={2} align="left">
                                         <Typography fontWeight="bold">
-                                            {selectedProductList?.map(p => p.amount * p.price)?.reduce((prevValue, currValue) => prevValue + currValue, 0)}
+                                            {receipt.purchasedProducts?.map(p => p.amount * p.price)?.reduce((prevValue, currValue) => prevValue + currValue, 0)}
                                         </Typography>
                                     </TableCell>
                             </TableRow>
@@ -173,7 +224,7 @@ const SelectedProductItem = ({
                     style={{width: '40px'}}
                 />
             </TableCell>
-            <TableCell>{productItem?.price * productItem?.amount}</TableCell>
+            <TableCell>{numberCommaSeparator(productItem?.price * productItem?.amount)}</TableCell>
             <TableCell>
                 <IconButton onClick={onItemRemoved}>
                     <RemoveCircleOutline />
