@@ -36,9 +36,10 @@ export const ProductSection = (): JSX.Element => {
     }
 console.log("terpenggal")
     return (
-        <Grid item xs={4} height='90vh'>
+        <Grid item xs={5} height='90vh'>
             <Card sx={{p: 2, height: '100%', backgroundColor: "#f5f5f5"}}>
                 <Autocomplete
+                    sx={{ width: '70%' }}
                     size='small'
                     value={searchValue}
                     onChange={(event: any, newValue: Product | null) => {
@@ -53,8 +54,7 @@ console.log("terpenggal")
                     onInputChange={(event, newInputValue) => setSearchInputValue(newInputValue)}
                     options={products}
                     // filterSelectedOptions={true} // useless since searchValue is cleared everytime
-                    filterOptions={(options: Product[]) => options?.filter(p => p.amount > 0)}
-                    getOptionLabel={(option: Product) => option.name }
+                    getOptionLabel={(option: Product) => `${option.name} (available: ${option.amount}) Rp. ${option.price}` }
                     renderInput={(params) => <TextField {...params} label="Add Product" />}
                 />
 

@@ -15,10 +15,10 @@ export const MainPage = (): JSX.Element => {
       <Grid 
         container spacing={5} 
         alignItems="center"
-        justifyItems="center"
+        justifyContent="center"
       >
 
-        <CustomerSection value={value} setValue={setValue} inputValue={inputValue} setInputValue={setInputValue} options={transactions[0].products} />
+        {/* <CustomerSection value={value} setValue={setValue} inputValue={inputValue} setInputValue={setInputValue} options={transactions[0].products} /> */}
         <ProductSection />
         <TransactionHistorySection />
 

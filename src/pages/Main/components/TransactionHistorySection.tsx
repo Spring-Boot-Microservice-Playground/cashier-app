@@ -21,7 +21,7 @@ export const TransactionHistorySection = (): JSX.Element => {
     }, []);
 
     return (
-        <Grid item xs={4} height='90vh'>
+        <Grid item xs={5} height='90vh'>
             <Card sx={{p: 2, height: '100%', backgroundColor: "#f5f5f5", overflow: 'auto'}}>
                 <Typography variant='h5' textAlign={'center'}>
                     Transaction History
