@@ -13,3 +13,8 @@ export interface Transaction {
     change: number;
     products: Product[];
 }
+
+export interface Receipt {
+    transaction: Transaction;
+    totalPrice: number;
+}
