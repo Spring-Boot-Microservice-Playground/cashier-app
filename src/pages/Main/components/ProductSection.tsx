@@ -3,22 +3,21 @@ import { Grid, Card, Autocomplete, TextField, Table, TableContainer, Paper, Tabl
 import { useContext, useReducer, useState } from "react";
 import { ProductsContext } from "../../../App";
 import { numberCommaSeparator } from "../../../helper";
-import { Product } from "../../../TypeDeclaration";
-
-interface Receipt {
-    purchasedProducts: Product[]
-    totalPrice: number
-    cash: number
-    change: number
-}
+import { Product, Transaction } from "../../../TypeDeclaration";
 
 enum ActionType {
     REMOVE_ITEM = 'REMOVE_ITEM',
     ADD_ITEM = 'ADD_ITEM',
-    CHANGE_AMOUNT = 'CHANGE_AMOUNT'
+    CHANGE_AMOUNT = 'CHANGE_AMOUNT',
+    INSERT_CASH_AMOUNT = 'INSERT_CASH_AMOUNT'
 }
 
-const initialReceipt: Receipt = {purchasedProducts: [], totalPrice: 0, cash: 0, change: 0}
+interface Receipt {
+    transaction: Transaction;
+    totalPrice: number;
+}
+
+const initialReceipt: Receipt = {transaction: {products: [], cash: 0, change: 0, date: '', customer_name: '', id: ''}, totalPrice: 0}
 
 const handleRemoveItem = (purchasedProducts: Product[], item: Product) => {
     const newList = purchasedProducts?.filter((p: Product) => p.id !== item.id);
@@ -32,9 +31,7 @@ const handleItemSelection = (purchasedProducts: Product[], item: Product) => {
         const selectedItemCopy = Object.assign({}, item)
         selectedItemCopy.amount = 1
         purchasedProducts.push(selectedItemCopy)
-        // setpurchasedProducts(updatedpurchasedProducts as Product[])
     }
-    purchasedProducts.forEach(p => console.log("handleItemSelection: " + p.name + ","))
     return purchasedProducts
 }
 
@@ -47,30 +44,73 @@ const handleOnChangeAmountSelectedItem = (purchasedProducts: Product[], item: Pr
         return true
     })
     return purchasedProducts
-    // setpurchasedProducts(purchasedProductsCopy) 
 }
 
-const reducer = (state: Receipt, action: {type: ActionType, item: Product, amount?: number}): Receipt => {
-    const {type, item, amount} = {...action}
+const calculateTotalPrice = (purchasedProducts: Product[]) => {
+    const totalPrice = purchasedProducts.map(p => p.price * p.amount).reduce((prev, curr) => prev + curr, 0)
+    return totalPrice
+}
+
+const reducer = (state: Receipt, action: {type: ActionType, item?: Product, amount?: number, cash?: number}): Receipt => {
+    const {type, item, amount, cash} = {...action}
     let updatedpurchasedProducts: Product[] = []
+    let [change, totalPrice] = [0, 0]
     switch (type) {
         case ActionType.ADD_ITEM:
-            updatedpurchasedProducts = handleItemSelection(state.purchasedProducts, item)
+            if(typeof item?.id === 'string') {
+                updatedpurchasedProducts = handleItemSelection(state.transaction.products, item)
+            }
+            totalPrice = calculateTotalPrice(updatedpurchasedProducts)
+            change = state.transaction.cash - totalPrice
             return {
-                ...state,
-                purchasedProducts: updatedpurchasedProducts
+                transaction: {
+                    ...state.transaction,
+                    products: updatedpurchasedProducts,
+                    change: change
+                },
+                totalPrice: totalPrice
             }
         case ActionType.CHANGE_AMOUNT:
-            updatedpurchasedProducts = handleOnChangeAmountSelectedItem(state.purchasedProducts, item, amount!)
+            if(typeof item?.id === 'string' && typeof amount === 'number') {
+                updatedpurchasedProducts = handleOnChangeAmountSelectedItem(state.transaction.products, item, amount)
+            }
+            totalPrice = calculateTotalPrice(updatedpurchasedProducts)
+            change = state.transaction.cash - totalPrice
             return {
-                ...state,
-                purchasedProducts: updatedpurchasedProducts
+                transaction: {
+                    ...state.transaction,
+                    products: updatedpurchasedProducts,
+                    change: change
+                },
+                totalPrice: totalPrice
             }
         case ActionType.REMOVE_ITEM:
-            updatedpurchasedProducts = handleRemoveItem(state.purchasedProducts, item)
+            if(typeof item?.id === 'string') {
+                updatedpurchasedProducts = handleRemoveItem(state.transaction.products, item)
+            }
+            totalPrice = calculateTotalPrice(updatedpurchasedProducts)
+            change = state.transaction.cash - totalPrice
+            return {
+                transaction: {
+                    ...state.transaction,
+                    products: updatedpurchasedProducts,
+                    change: change
+                },
+                totalPrice: totalPrice
+            }
+        case ActionType.INSERT_CASH_AMOUNT:
+            let userCash = 0
+            if(typeof cash === 'number'){
+                userCash = cash
+                change = cash - state.totalPrice
+            }
             return {
                 ...state,
-                purchasedProducts: updatedpurchasedProducts
+                transaction: {
+                    ...state.transaction,
+                    change: change,
+                    cash: userCash
+                }
             }
         default:
             throw new Error("product section reducer error");
@@ -116,7 +156,7 @@ export const ProductSection = (): JSX.Element => {
                                 <TableCell sx={{ fontWeight: 'bold' }} align="left">Price</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }} align="right"></TableCell>
                             </TableRow>
-                            {receipt.purchasedProducts?.map((productItem, index) => (
+                            {receipt.transaction.products?.map((productItem, index) => (
                                 <SelectedProductItem 
                                     key={index} 
                                     onChangeAmount={(amount: number) => receiptDispatch({type: ActionType.CHANGE_AMOUNT, item: productItem, amount: amount})} 
@@ -128,40 +168,58 @@ export const ProductSection = (): JSX.Element => {
                                 />
                             ))}
                             <TableRow>
-                                    <TableCell colSpan={2} align="right">
-                                        <Typography fontWeight="bold">
-                                            Total Price : Rp.
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell colSpan={2} align="left">
-                                        <Typography fontWeight="bold">
-                                        {
-                                            numberCommaSeparator(receipt.purchasedProducts?.map(p => p.amount * p.price)?.reduce((prevValue, currValue) => prevValue + currValue, 0))
-                                        }
-                                        </Typography>
-                                    </TableCell>
+                                <TableCell colSpan={2} align="right">
+                                    <Typography fontWeight="bold">
+                                        Total Price : Rp.
+                                    </Typography>
+                                </TableCell>
+                                <TableCell colSpan={2} align="left">
+                                    <Typography fontWeight="bold">
+                                    {
+                                        numberCommaSeparator(receipt.transaction.products?.map(p => p.amount * p.price)?.reduce((prevValue, currValue) => prevValue + currValue, 0))
+                                    }
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                            <TableRow sx={{ backgroundColor: receipt.transaction.cash >= receipt.totalPrice ? '' : 'red'}}>
+                                <TableCell colSpan={2} align="right">
+                                    <Typography fontWeight="bold">
+                                        Cash : Rp.
+                                    </Typography>
+                                </TableCell>
+                                <TableCell colSpan={2} align="left">
+                                    <input 
+                                        min={0}
+                                        max={10000000} 
+                                        // required={true}
+                                        defaultValue={0}
+                                        onBlur={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                            let value = parseInt(e.target.value)
+                                            receiptDispatch({type: ActionType.INSERT_CASH_AMOUNT, cash: value})
+                                        }}
+                                        onKeyDownCapture={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                                            if(e.key === 'Enter' || e.key === "NumpadEnter"){
+                                                e.preventDefault()
+                                                e.currentTarget.blur()
+                                            }
+                                        }}
+
+                                        type="number" 
+                                        style={{ width: '110px' }}
+                                    />
+                                </TableCell>
                             </TableRow>
                             <TableRow>
-                                    <TableCell colSpan={2} align="right">
-                                        <Typography fontWeight="bold">
-                                            Cash : Rp.
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell colSpan={2} align="left">
-                                        <input min={1} max={10000000} type="number" style={{ width: '110px' }}/>
-                                    </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                    <TableCell colSpan={2} align="right">
-                                        <Typography fontWeight="bold">
-                                            Change : Rp.
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell colSpan={2} align="left">
-                                        <Typography fontWeight="bold">
-                                            {receipt.purchasedProducts?.map(p => p.amount * p.price)?.reduce((prevValue, currValue) => prevValue + currValue, 0)}
-                                        </Typography>
-                                    </TableCell>
+                                <TableCell colSpan={2} align="right">
+                                    <Typography fontWeight="bold">
+                                        Change : Rp.
+                                    </Typography>
+                                </TableCell>
+                                <TableCell colSpan={2} align="left">
+                                    <Typography fontWeight="bold">
+                                        {!isNaN(receipt.transaction.change) && receipt.transaction.change >=0 ? numberCommaSeparator(receipt.transaction.change) : ""}
+                                    </Typography>
+                                </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
