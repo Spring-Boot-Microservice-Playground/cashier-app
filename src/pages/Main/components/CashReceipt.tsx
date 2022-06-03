@@ -3,7 +3,7 @@ import { Table, TableContainer, Paper, TableBody, TableRow, TableCell, IconButto
 import { useState, useContext } from "react";
 import { numberCommaSeparator } from "../../../helper";
 import { ProductsContext } from "../../../App";
-import { Product, Receipt, Transaction } from "../../../TypeDeclaration";
+import { Product, Receipt } from "../../../TypeDeclaration";
 import { ActionType } from "./CreateTransactionSection";
 
 export const CashReceipt = ({

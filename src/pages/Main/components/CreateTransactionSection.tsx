@@ -139,9 +139,9 @@ export const CreateTransactionSection = (): JSX.Element => {
                     onInputChange={(event, newInputValue) => setSearchInputValue(newInputValue)}
                     options={PRODUCTS}
                     // filterSelectedOptions={true} // useless since searchValue is cleared everytime
-                    // getOptionLabel={(option: Product) => `${option.name} (${option.amount}) Rp. ${option.price}` }
+                    getOptionLabel={(option: Product) => `${option.id}` }
                     renderOption={(props, option: Product) => (
-                        <li {...props}>
+                        <li key={option.name} {...props}>
                             <Grid container justifyContent='space-between'>
                                 <Grid item xs={6}>
                                     <Typography color='gray' variant="caption">name: </Typography>

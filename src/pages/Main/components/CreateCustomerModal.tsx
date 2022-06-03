@@ -13,14 +13,14 @@ export const CreateCustomerModal = ({open, setOpen}: {open: boolean, setOpen: (o
             </DialogTitle>
             <DialogContent>
                 <DialogContentText id="alert-dialog-description">
-                Let Google help apps determine location. This means sending anonymous
-                location data to Google, even when no apps are running.
+                    Let Google help apps determine location. This means sending anonymous
+                    location data to Google, even when no apps are running.
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => setOpen(false)}>Disagree</Button>
                 <Button onClick={() => setOpen(false)} autoFocus>
-                Agree
+                    Agree
                 </Button>
             </DialogActions>
         </Dialog>
