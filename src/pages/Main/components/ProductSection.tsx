@@ -1,5 +1,5 @@
 import { RemoveCircleOutline } from "@mui/icons-material";
-import { Grid, Card, Autocomplete, TextField, Table, TableContainer, Paper, TableBody, TableRow, TableCell, IconButton, Typography } from "@mui/material";
+import { Grid, Card, Autocomplete, TextField, Table, TableContainer, Paper, TableBody, TableRow, TableCell, IconButton, Typography, Button } from "@mui/material";
 import { useContext, useReducer, useState } from "react";
 import { ProductsContext } from "../../../App";
 import { numberCommaSeparator } from "../../../helper";
@@ -126,8 +126,21 @@ export const ProductSection = (): JSX.Element => {
     return (
         <Grid item xs={5} height='90vh'>
             <Card sx={{p: 2, height: '100%', backgroundColor: "#f5f5f5"}}>
+                <Grid container alignItems='center'>
+                    <Grid item xs={8}>
+                        <Autocomplete
+                            renderInput={(params) => <TextField {...params} label="Select Customer" />}
+                            options={['halo', 'bandung']}
+                            size='small'
+                        />
+                    </Grid>
+                    <Grid item>
+                        <Button sx={{ marginLeft: 2 }} variant="contained" size="small">New Customer</Button>
+                    </Grid>
+                </Grid>
+                <br />
                 <Autocomplete
-                    sx={{ width: '70%' }}
+                    sx={{ width: '100%' }}
                     size='small'
                     value={searchValue}
                     onChange={(event: any, newItem: Product | null) => {
@@ -143,7 +156,7 @@ export const ProductSection = (): JSX.Element => {
                     onInputChange={(event, newInputValue) => setSearchInputValue(newInputValue)}
                     options={PRODUCTS}
                     // filterSelectedOptions={true} // useless since searchValue is cleared everytime
-                    getOptionLabel={(option: Product) => `${option.name} (available: ${option.amount}) Rp. ${option.price}` }
+                    getOptionLabel={(option: Product) => `${option.name} (${option.amount}) Rp. ${option.price}` }
                     renderInput={(params) => <TextField {...params} label="Add Product" />}
                 />
 
