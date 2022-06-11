@@ -14,6 +14,12 @@ export interface Transaction {
     products: Product[];
 }
 
+export interface Customer {
+    name: string
+    created_at: string
+    address: string
+}
+
 export interface Receipt {
     transaction: Transaction;
     totalPrice: number;

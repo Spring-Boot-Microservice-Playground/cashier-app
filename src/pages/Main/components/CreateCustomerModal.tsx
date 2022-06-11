@@ -1,4 +1,6 @@
-import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material"
+import { Dialog, DialogTitle, IconButton } from "@mui/material"
+import { CreateCustomerForm } from "./CreateCustomerForm"
+import CloseIcon from '@mui/icons-material/Close';
 
 export const CreateCustomerModal = ({open, setOpen}: {open: boolean, setOpen: (open: boolean) => void}) => {
     return (
@@ -8,21 +10,24 @@ export const CreateCustomerModal = ({open, setOpen}: {open: boolean, setOpen: (o
             aria-labelledby="alert-dialog-title"
             aria-describedby="alert-dialog-description"
         >
+            {open ? (
+                <IconButton
+                aria-label="close"
+                onClick={() => setOpen(false)}
+                sx={{
+                    position: 'absolute',
+                    right: 8,
+                    top: 8,
+                    color: (theme) => theme.palette.grey[500],
+                }}
+                >
+                    <CloseIcon />
+                </IconButton>
+            ) : null}
             <DialogTitle id="alert-dialog-title">
-                {"Use Google's location service?"}
+                {"Create New Customer"}
             </DialogTitle>
-            <DialogContent>
-                <DialogContentText id="alert-dialog-description">
-                    Let Google help apps determine location. This means sending anonymous
-                    location data to Google, even when no apps are running.
-                </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={() => setOpen(false)}>Disagree</Button>
-                <Button onClick={() => setOpen(false)} autoFocus>
-                    Agree
-                </Button>
-            </DialogActions>
+            <CreateCustomerForm />
         </Dialog>
     )
 }
