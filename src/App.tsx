@@ -4,7 +4,7 @@ import './App.css';
 import { MainPage } from './pages/Main/MainPage';
 import ProductPage from './pages/Product/ProductPage';
 import { Product } from './TypeDeclaration';
-import axios, {AxiosResponse} from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 export const ProductsContext = createContext<Product[]>([]);
 
@@ -17,8 +17,8 @@ export const App = (): JSX.Element => {
         setProducts(res?.data)
       })
       .catch((error) => {
-          console.log("error :" + error.toJSON())
-          console.log("error :" + error.message)
+        console.log("error :" + error.toJSON())
+        console.log("error :" + error.message)
       })
   }, []);
 

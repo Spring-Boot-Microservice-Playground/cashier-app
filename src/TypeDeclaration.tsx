@@ -19,8 +19,3 @@ export interface Customer {
     created_at: string
     address: string
 }
-
-export interface Receipt {
-    transaction: Transaction;
-    totalPrice: number;
-}

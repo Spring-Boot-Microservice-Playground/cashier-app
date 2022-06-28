@@ -4,13 +4,13 @@ import { Transaction } from "../../../TypeDeclaration";
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 
-export const TransactionListItem = ({trDetail}: {trDetail: Transaction}) => {
+export const TransactionListItem = ({ trDetail }: { trDetail: Transaction }) => {
     const [isExpand, setIsExpand] = useState<boolean>(false);
 
     return (
         <>
             <ListItemButton
-                sx={{mt: 1, backgroundColor: 'background.paper'}}
+                sx={{ mt: 1, backgroundColor: 'background.paper' }}
                 key={trDetail.id}
                 onClick={() => setIsExpand(!isExpand)}
             >
@@ -44,24 +44,26 @@ export const TransactionListItem = ({trDetail}: {trDetail: Transaction}) => {
                                 <TableRow key={p.name}>
                                     <TableCell width="50%">{p.name}</TableCell>
                                     <TableCell align="right">{p.amount}</TableCell>
-                                    <TableCell align="right">{p.price}</TableCell>
+                                    <TableCell align="right">{p.price * p.amount}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
-                        <TableRow>
-                            <TableCell colSpan={2} sx={{ fontWeight: 'bold', textAlign: 'right' }}>Total : </TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                                Rp. {trDetail.products?.map(p => p.amount * p.price).reduce((prev, curr) => prev + curr, 0)}
-                            </TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell colSpan={2} sx={{ fontWeight: 'bold', textAlign: 'right' }}>Cash : </TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>Rp. {trDetail.cash}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell colSpan={2} sx={{ fontWeight: 'bold', textAlign: 'right' }}>Change : </TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>Rp. {trDetail.change}</TableCell>
-                        </TableRow>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell colSpan={2} sx={{ fontWeight: 'bold', textAlign: 'right' }}>Total : </TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                                    Rp. {trDetail.products?.map(p => p.amount * p.price).reduce((prev, curr) => prev + curr, 0)}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell colSpan={2} sx={{ fontWeight: 'bold', textAlign: 'right' }}>Cash : </TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Rp. {trDetail.cash}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell colSpan={2} sx={{ fontWeight: 'bold', textAlign: 'right' }}>Change : </TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Rp. {trDetail.change}</TableCell>
+                            </TableRow>
+                        </TableBody>
                     </Table>
                 </TableContainer>
             </Collapse>

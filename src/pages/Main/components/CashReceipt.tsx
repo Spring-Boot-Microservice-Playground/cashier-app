@@ -3,8 +3,8 @@ import { Table, TableContainer, Paper, TableBody, TableRow, TableCell, IconButto
 import { useState, useContext } from "react";
 import { numberCommaSeparator } from "../../../helper";
 import { ProductsContext } from "../../../App";
-import { Product, Receipt } from "../../../TypeDeclaration";
-import { ActionType } from "./CreateTransactionSection";
+import { Product } from "../../../TypeDeclaration";
+import { CreateTransactionActions, Receipt } from "./CreateTransactionSection";
 
 export const CashReceipt = ({
         receipt,
@@ -12,7 +12,7 @@ export const CashReceipt = ({
     } : {
         receipt: Receipt,
         receiptDispatch: React.Dispatch<{
-            type: ActionType;
+            type: CreateTransactionActions;
             item?: Product;
             amount?: number;
             cash?: number;
@@ -34,12 +34,12 @@ export const CashReceipt = ({
                     {receipt.transaction.products?.map((productItem, index) => (
                         <SelectedProductItem 
                             key={index} 
-                            onChangeAmount={(amount: number) => receiptDispatch({type: ActionType.CHANGE_AMOUNT, item: productItem, amount: amount})} 
+                            onChangeAmount={(amount: number) => receiptDispatch({type: CreateTransactionActions.CHANGE_AMOUNT, item: productItem, amount: amount})} 
                             maxAmount={(() => {
                                 let getAmount = PRODUCTS?.find(p => p.id === productItem.id)?.amount
                                 return getAmount ? getAmount : 0
                             })()}
-                            productItem={productItem} onItemRemoved={() => receiptDispatch({type: ActionType.REMOVE_ITEM, item: productItem})}
+                            productItem={productItem} onItemRemoved={() => receiptDispatch({type: CreateTransactionActions.REMOVE_ITEM, item: productItem})}
                         />
                     ))}
                     <TableRow>
@@ -69,7 +69,7 @@ export const CashReceipt = ({
                                 defaultValue={0}
                                 onBlur={(e: React.ChangeEvent<HTMLInputElement>) => {
                                     let value = parseInt(e.target.value)
-                                    receiptDispatch({type: ActionType.INSERT_CASH_AMOUNT, cash: value})
+                                    receiptDispatch({type: CreateTransactionActions.INSERT_CASH_AMOUNT, cash: value})
                                 }}
                                 onKeyDownCapture={(e: React.KeyboardEvent<HTMLInputElement>) => {
                                     if(e.key === 'Enter' || e.key === "NumpadEnter"){
